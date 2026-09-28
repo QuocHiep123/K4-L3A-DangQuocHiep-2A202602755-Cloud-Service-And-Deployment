@@ -69,6 +69,23 @@ class TestConfig:
         with pytest.raises(ValidationError):
             Settings(_env_file=None)
 
+    def test_thieu_api_key_thi_service_khong_khoi_dong(self, monkeypatch):
+        """Uvicorn lifespan must reject a missing key before serving requests."""
+        from fastapi.testclient import TestClient
+
+        from app.config import Settings, get_settings
+        from app.main import app
+
+        monkeypatch.delenv("AGENT_API_KEY", raising=False)
+        monkeypatch.setitem(Settings.model_config, "env_file", None)
+        get_settings.cache_clear()
+        try:
+            with pytest.raises(ValidationError):
+                with TestClient(app):
+                    pass
+        finally:
+            get_settings.cache_clear()
+
     def test_khong_hardcode_secret(self, lab_root):
         """Không có secret nào nằm trong source code."""
         for name in ("config.py", "main.py", "auth.py"):
@@ -117,6 +134,16 @@ class TestStructuredLogging:
 
         stamp = json.loads(log_event("e"))["timestamp"]
         assert re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}", stamp), stamp
+
+    def test_reserved_metadata_khong_bi_fields_ghi_de(self):
+        from app.logging_utils import log_event
+
+        parsed = json.loads(log_event("real_event", level="WARNING", timestamp="bad", user_id="sv01"))
+        assert parsed["event"] == "real_event"
+        assert parsed["level"] == "warning"
+        assert parsed["timestamp"] != "bad"
+        assert re.match(r"^\d{4}-\d{2}-\d{2}T", parsed["timestamp"])
+        assert parsed["user_id"] == "sv01"
 
 
 class TestHealthEndpoint:
