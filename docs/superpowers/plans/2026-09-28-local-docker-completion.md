@@ -1,6 +1,6 @@
 # Local Docker Completion Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Complete every locally verifiable lab requirement and reach a capped final automated score of 100 by combining the Docker fallback score with the CI/CD bonus.
 
@@ -42,7 +42,7 @@
 - Consumes: Python 3.11+ and `requirements.txt`.
 - Produces: `.venv\Scripts\python.exe` with all runtime and test packages; local environment values loaded from `.env`.
 
-- [ ] **Step 1: Install dependencies with UTF-8 console settings**
+- [x] **Step 1: Install dependencies with UTF-8 console settings**
 
 ```powershell
 $env:PYTHONUTF8 = '1'
@@ -50,7 +50,7 @@ $env:PYTHONIOENCODING = 'utf-8'
 & '.\.venv\Scripts\python.exe' -m pip install -r requirements.txt
 ```
 
-- [ ] **Step 2: Verify critical imports**
+- [x] **Step 2: Verify critical imports**
 
 ```powershell
 & '.\.venv\Scripts\python.exe' -c "import fastapi, pydantic_settings, redis, fakeredis, pytest; print('dependencies-ok')"
@@ -58,7 +58,7 @@ $env:PYTHONIOENCODING = 'utf-8'
 
 Expected: `dependencies-ok`.
 
-- [ ] **Step 3: Verify secret files are ignored**
+- [x] **Step 3: Verify secret files are ignored**
 
 ```powershell
 git check-ignore .env .venv
@@ -79,7 +79,7 @@ Expected: `.env` and `.venv` are ignored; `git ls-files .env` prints nothing.
 - Produces: `Settings`, `get_settings()`, `log_event(event, level="info", **fields) -> str`, and `health()`.
 - Consumes: `lifecycle.shutting_down`, `SERVICE_NAME`, and `SERVICE_VERSION`.
 
-- [ ] **Step 1: Run CP1 to establish the failing baseline**
+- [x] **Step 1: Run CP1 to establish the failing baseline**
 
 ```powershell
 & '.\.venv\Scripts\python.exe' -m pytest tests/test_cp1.py -v
@@ -87,7 +87,7 @@ Expected: `.env` and `.venv` are ignored; `git ls-files .env` prints nothing.
 
 Expected: failures for missing settings fields, `log_event`, and `/health`.
 
-- [ ] **Step 2: Add typed settings with a required secret**
+- [x] **Step 2: Add typed settings with a required secret**
 
 ```python
 port: int = 8000
@@ -98,7 +98,7 @@ monthly_budget_usd: float = 10.0
 log_level: str = "INFO"
 ```
 
-- [ ] **Step 3: Implement one-line JSON logging**
+- [x] **Step 3: Implement one-line JSON logging**
 
 ```python
 payload = {"event": event, "level": level.lower(), "timestamp": utc_now_iso(), **fields}
@@ -107,7 +107,7 @@ print(line, file=sys.stdout)
 return line
 ```
 
-- [ ] **Step 4: Implement dependency-free liveness**
+- [x] **Step 4: Implement dependency-free liveness**
 
 ```python
 if lifecycle.shutting_down:
@@ -115,7 +115,7 @@ if lifecycle.shutting_down:
 return {"status": "ok", "service": SERVICE_NAME, "version": SERVICE_VERSION}
 ```
 
-- [ ] **Step 5: Run CP1 and verify all tests pass**
+- [x] **Step 5: Run CP1 and verify all tests pass**
 
 ```powershell
 & '.\.venv\Scripts\python.exe' -m pytest tests/test_cp1.py -v
@@ -123,7 +123,7 @@ return {"status": "ok", "service": SERVICE_NAME, "version": SERVICE_VERSION}
 
 Expected: 13 passed.
 
-- [ ] **Step 6: Commit CP1**
+- [x] **Step 6: Commit CP1**
 
 ```powershell
 git add app/config.py app/logging_utils.py app/main.py
@@ -143,13 +143,13 @@ git commit -m "feat: complete configuration health and logging"
 - Produces: `verify_api_key() -> str`, `RateLimiter.check()`, `CostGuard.check()`, `CostGuard.record()`, and the protected `/ask` endpoint.
 - Consumes: `Settings.agent_api_key`, Redis string/ZSET operations, `ConversationStore`, `ask_llm`, and `log_event`.
 
-- [ ] **Step 1: Run CP3 to establish the failing baseline**
+- [x] **Step 1: Run CP3 to establish the failing baseline**
 
 ```powershell
 & '.\.venv\Scripts\python.exe' -m pytest tests/test_cp3.py -v
 ```
 
-- [ ] **Step 2: Implement constant-time authentication**
+- [x] **Step 2: Implement constant-time authentication**
 
 ```python
 expected = get_settings().agent_api_key
@@ -158,7 +158,7 @@ if x_api_key is None or not secrets.compare_digest(x_api_key, expected):
 return x_user_id or ANONYMOUS_USER
 ```
 
-- [ ] **Step 3: Implement the Redis sliding window**
+- [x] **Step 3: Implement the Redis sliding window**
 
 ```python
 now = now if now is not None else time.time()
@@ -171,7 +171,7 @@ self.client.zadd(key, {f"{now}:{uuid.uuid4().hex}": now})
 self.client.expire(key, WINDOW_SECONDS)
 ```
 
-- [ ] **Step 4: Implement monthly spending operations**
+- [x] **Step 4: Implement monthly spending operations**
 
 ```python
 value = self.client.get(self._key(user_id, month))
@@ -190,7 +190,7 @@ self.client.expire(key, KEY_TTL_SECONDS)
 return float(total)
 ```
 
-- [ ] **Step 5: Implement `/ask` in the required guard-before-cost order**
+- [x] **Step 5: Implement `/ask` in the required guard-before-cost order**
 
 ```python
 limiter.check(user_id)
@@ -204,7 +204,7 @@ log_event("ask_completed", user_id=user_id, tokens_in=result["tokens_in"], token
 return {"answer": result["answer"], "user_id": user_id, "history_length": len(history), "cost_usd": result["cost_usd"], "tokens": {"in": result["tokens_in"], "out": result["tokens_out"]}}
 ```
 
-- [ ] **Step 6: Run CP3 and verify all tests pass**
+- [x] **Step 6: Run CP3 and verify all tests pass**
 
 ```powershell
 & '.\.venv\Scripts\python.exe' -m pytest tests/test_cp3.py -v
@@ -212,7 +212,7 @@ return {"answer": result["answer"], "user_id": user_id, "history_length": len(hi
 
 Expected: 22 passed.
 
-- [ ] **Step 7: Commit CP3**
+- [x] **Step 7: Commit CP3**
 
 ```powershell
 git add app/auth.py app/rate_limiter.py app/cost_guard.py app/main.py
@@ -231,13 +231,13 @@ git commit -m "feat: secure ask requests with quotas"
 - Produces: `ConversationStore.ping/append/get_history`, `Lifecycle.install/request_shutdown`, and `ready()`.
 - Consumes: redis-py list/TTL operations and the shared `lifecycle` object.
 
-- [ ] **Step 1: Run CP4 to establish the failing baseline**
+- [x] **Step 1: Run CP4 to establish the failing baseline**
 
 ```powershell
 & '.\.venv\Scripts\python.exe' -m pytest tests/test_cp4.py -v
 ```
 
-- [ ] **Step 2: Implement bounded Redis history and resilient ping**
+- [x] **Step 2: Implement bounded Redis history and resilient ping**
 
 ```python
 try:
@@ -257,7 +257,7 @@ self.client.expire(key, HISTORY_TTL_SECONDS)
 return [json.loads(item) for item in self.client.lrange(self._key(user_id), 0, -1)]
 ```
 
-- [ ] **Step 3: Implement shutdown flagging and handler forwarding**
+- [x] **Step 3: Implement shutdown flagging and handler forwarding**
 
 ```python
 self.shutting_down = True
@@ -272,7 +272,7 @@ for sig in (signal.SIGTERM, signal.SIGINT):
     signal.signal(sig, self.request_shutdown)
 ```
 
-- [ ] **Step 4: Implement readiness semantics**
+- [x] **Step 4: Implement readiness semantics**
 
 ```python
 if lifecycle.shutting_down:
@@ -282,7 +282,7 @@ if not store.ping():
 return {"status": "ready", "redis": True}
 ```
 
-- [ ] **Step 5: Run CP4 and the combined Python checkpoints**
+- [x] **Step 5: Run CP4 and the combined Python checkpoints**
 
 ```powershell
 & '.\.venv\Scripts\python.exe' -m pytest tests/test_cp1.py tests/test_cp3.py tests/test_cp4.py -v
@@ -290,7 +290,7 @@ return {"status": "ready", "redis": True}
 
 Expected: all selected tests pass.
 
-- [ ] **Step 6: Commit CP4**
+- [x] **Step 6: Commit CP4**
 
 ```powershell
 git add app/store.py app/lifecycle.py app/main.py
@@ -309,13 +309,13 @@ git commit -m "feat: add Redis state and graceful lifecycle"
 - Produces: a non-root `agent` image and a Compose stack with `agent` plus `redis`.
 - Consumes: `$PORT`, `${AGENT_API_KEY}`, Redis hostname `redis`, and `/health`.
 
-- [ ] **Step 1: Run CP2 static tests**
+- [x] **Step 1: Run CP2 static tests**
 
 ```powershell
 & '.\.venv\Scripts\python.exe' -m pytest tests/test_cp2.py -v -m "not docker"
 ```
 
-- [ ] **Step 2: Replace the Dockerfile with a cached multi-stage build**
+- [x] **Step 2: Replace the Dockerfile with a cached multi-stage build**
 
 ```dockerfile
 FROM python:3.11-slim AS builder
@@ -336,7 +336,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 CMD python
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
 ```
 
-- [ ] **Step 3: Exclude secrets, caches, tests, and local artifacts**
+- [x] **Step 3: Exclude secrets, caches, tests, and local artifacts**
 
 ```text
 .git
@@ -353,7 +353,7 @@ screenshots
 docs
 ```
 
-- [ ] **Step 4: Add the Compose agent service**
+- [x] **Step 4: Add the Compose agent service**
 
 ```yaml
 agent:
@@ -377,7 +377,7 @@ agent:
     retries: 5
 ```
 
-- [ ] **Step 5: Run CP2 static tests, build, and inspect the image user**
+- [x] **Step 5: Run CP2 static tests, build, and inspect the image user**
 
 ```powershell
 & '.\.venv\Scripts\python.exe' -m pytest tests/test_cp2.py -v
@@ -388,7 +388,7 @@ docker image inspect day12-agent:prod --format '{{.Config.User}}'
 
 Expected: tests pass, Compose config resolves, and image user is non-root.
 
-- [ ] **Step 6: Commit CP2**
+- [x] **Step 6: Commit CP2**
 
 ```powershell
 git add Dockerfile .dockerignore docker-compose.yml
@@ -408,11 +408,11 @@ git commit -m "feat: containerize agent with Redis"
 - Produces: a healthy local stack at `http://localhost:8000` and truthful local-fallback documentation.
 - Consumes: the Compose stack and local API key.
 
-- [ ] **Step 1: Enable the documented fallback locally**
+- [x] **Step 1: Enable the documented fallback locally**
 
 Set `LOCAL_FALLBACK=true` in `.env`; do not add `.env` to Git.
 
-- [ ] **Step 2: Start the stack and collect actual status output**
+- [x] **Step 2: Start the stack and collect actual status output**
 
 ```powershell
 docker compose up -d --build
@@ -424,19 +424,19 @@ curl.exe -i -X POST http://localhost:8000/ask -H "Content-Type: application/json
 
 Expected: 200 health, 200 readiness, and 401 unauthenticated ask.
 
-- [ ] **Step 3: Verify authenticated ask and rate limiting with the local key**
+- [x] **Step 3: Verify authenticated ask and rate limiting with the local key**
 
 Use the `AGENT_API_KEY` from the local `.env` only in the shell environment and confirm a successful `/ask`, then repeated requests eventually return 429. Do not paste the key into any tracked file.
 
-- [ ] **Step 4: Update deployment documentation truthfully**
+- [x] **Step 4: Update deployment documentation truthfully**
 
 Record the local fallback platform, `http://localhost:8000`, the environment variable names, actual command output with secrets removed, and the reason cloud deployment was intentionally not used. Do not claim an HTTPS public deployment.
 
-- [ ] **Step 5: Capture real local evidence**
+- [x] **Step 5: Capture real local evidence**
 
 Capture the running Docker Compose service status and the actual `/health` response as PNG files. If GUI capture is unavailable, report the limitation instead of fabricating images.
 
-- [ ] **Step 6: Run CP5 fallback tests**
+- [x] **Step 6: Run CP5 fallback tests**
 
 ```powershell
 & '.\.venv\Scripts\python.exe' -m pytest tests/test_cp5.py -v
@@ -444,7 +444,7 @@ Capture the running Docker Compose service status and the actual `/health` respo
 
 Expected: local fallback tests pass and CP5 is capped at 9/15 by the rubric.
 
-- [ ] **Step 7: Commit truthful CP5 evidence**
+- [x] **Step 7: Commit truthful CP5 evidence**
 
 ```powershell
 git add DEPLOYMENT.md screenshots
@@ -460,15 +460,15 @@ git commit -m "docs: record local Docker deployment evidence"
 - Consumes: actual logs, Docker image sizes/cache output, runtime requests, and failure observations from Tasks 2-6.
 - Produces: ten original, explainable reflection answers.
 
-- [ ] **Step 1: Gather factual measurements**
+- [x] **Step 1: Gather factual measurements**
 
 Record a real JSON log line, image size, rebuild cache behavior, request-limit behavior, history-length behavior, and one actual deployment/runtime error. Do not invent measurements.
 
-- [ ] **Step 2: Replace all ten answer placeholders**
+- [x] **Step 2: Replace all ten answer placeholders**
 
 Answer each question in concise Vietnamese and include the collected measurements where requested.
 
-- [ ] **Step 3: Verify placeholder count**
+- [x] **Step 3: Verify placeholder count**
 
 ```powershell
 rg -n "Câu trả lời của bạn|\.\.\. MB" exercises.md
@@ -476,7 +476,7 @@ rg -n "Câu trả lời của bạn|\.\.\. MB" exercises.md
 
 Expected: no matches.
 
-- [ ] **Step 4: Commit reflections**
+- [x] **Step 4: Commit reflections**
 
 ```powershell
 git add exercises.md
@@ -494,13 +494,13 @@ git commit -m "docs: complete deployment reflections"
 - Produces: push/PR test execution, Docker build after tests, and a main-branch deploy job gated by test success and GitHub Secrets.
 - Consumes: `requirements.txt`, `Dockerfile`, and `secrets.RAILWAY_TOKEN` only at deployment time.
 
-- [ ] **Step 1: Run bonus tests to establish the failing baseline**
+- [x] **Step 1: Run bonus tests to establish the failing baseline**
 
 ```powershell
 & '.\.venv\Scripts\python.exe' -m pytest tests/test_bonus_cicd.py -v
 ```
 
-- [ ] **Step 2: Create the workflow**
+- [x] **Step 2: Create the workflow**
 
 ```yaml
 name: CI
@@ -540,11 +540,11 @@ jobs:
         run: railway up --detach
 ```
 
-- [ ] **Step 3: Add the workflow status badge**
+- [x] **Step 3: Add the workflow status badge**
 
 Add the repository-specific GitHub Actions badge for `.github/workflows/ci.yml` near the top of `README.md`.
 
-- [ ] **Step 4: Run bonus tests**
+- [x] **Step 4: Run bonus tests**
 
 ```powershell
 & '.\.venv\Scripts\python.exe' -m pytest tests/test_bonus_cicd.py -v
@@ -556,7 +556,7 @@ the public GitHub repository; a missing remote run must be reported rather than
 fabricated. Even 12/13 bonus tests yield enough bonus for the fallback score to
 reach the final cap of 100.
 
-- [ ] **Step 5: Commit CI/CD**
+- [x] **Step 5: Commit CI/CD**
 
 ```powershell
 git add .github/workflows/ci.yml README.md
@@ -572,13 +572,13 @@ git commit -m "ci: add test build and deploy pipeline"
 - Consumes: all prior tasks.
 - Produces: final score report and clean, secret-free repository state.
 
-- [ ] **Step 1: Run the complete test suite**
+- [x] **Step 1: Run the complete test suite**
 
 ```powershell
 & '.\.venv\Scripts\python.exe' -m pytest tests -v
 ```
 
-- [ ] **Step 2: Run the grader with UTF-8 output**
+- [x] **Step 2: Run the grader with UTF-8 output**
 
 ```powershell
 $env:PYTHONUTF8 = '1'
@@ -588,7 +588,7 @@ $env:PYTHONIOENCODING = 'utf-8'
 
 Expected: mandatory score 94 with fallback cap, bonus 10, final capped score 100.
 
-- [ ] **Step 3: Audit tracked files for secrets and unfinished code**
+- [x] **Step 3: Audit tracked files for secrets and unfinished code**
 
 ```powershell
 git ls-files | Select-String -Pattern '(^|/)\.env$|\.(pem|key)$'
@@ -599,13 +599,13 @@ git status --short --branch
 
 Expected: no tracked secret, no lab stubs, no whitespace errors, and only intentional changes.
 
-- [ ] **Step 4: Stop the local stack after verification**
+- [x] **Step 4: Stop the local stack after verification**
 
 ```powershell
 docker compose down
 ```
 
-- [ ] **Step 5: Commit any final documentation-only corrections**
+- [x] **Step 5: Commit any final documentation-only corrections**
 
 ```powershell
 git add DEPLOYMENT.md exercises.md README.md
